@@ -45,7 +45,8 @@ function incrementScore(){
 
 function tick() {
 	timeRemaining -= 10;
-	timerText.innerText = `${timeRemaining/1000}/${maxTime/1000}`;
+	
+	timerText.innerText = `${Math.round(timeRemaining)/1000}/${Math.round(maxTime)/1000}`;
 	const percentage = timeRemaining / maxTime;
 	timerBar.style.width = `${percentage * 100}%`;
 	if(timeRemaining <= 0){
@@ -57,10 +58,11 @@ function handleGuess(guessMatched) {
 	if (guessMatched === matched) {
 		incrementScore();
 		timeRemaining = maxTime;
+		randomizeAnimal();
+		maxTime *= .99;
 	} else {
 		gameOver("Wrong answer!");
 	}
-	randomizeAnimal();
 }
 
 function gameOver(reason) {
