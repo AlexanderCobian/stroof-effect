@@ -76,7 +76,7 @@ function gameOver(reason) {
 	textDisplay.innerText = 'Game over! ' + reason + '\n\u00A0';
 	setTimeout(() => {
 		canStart = true;
-		textDisplay.innerText += '(Shift to replay)';
+		textDisplay.innerText += '(Shift/tap to replay)';
 	}, 2000);
 }
 
