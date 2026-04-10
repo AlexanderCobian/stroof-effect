@@ -25,7 +25,7 @@ body {
 #name-display {
 	font-size: 80pt;
 	font-weight: bold;
-	margin-bottom: auto;
+	/* margin-bottom: auto; */
 }
 #timer-container {
 	position: relative;

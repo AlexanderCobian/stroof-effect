@@ -14,17 +14,19 @@ const timerBar = document.getElementById('timer-bar');
 const timerText = document.getElementById('timer-text');
 const scoreDisplay = document.getElementById('score-display');
 const textDisplay = document.getElementById('text-display');
-const initialMaxTime = 5000;
+const initialMaxTime = 3000;
 let matched;
 let score;
 let maxTime;
 let timeRemaining;
 let gameInterval;
 let gameRunning = false;
+let canStart = true;
 let emojiIndex = 0;
 let soundIndex = 1;
 
 function startGame() {
+	canStart = false;
 	gameRunning = true;
 	resetScore();
 	maxTime = initialMaxTime;
@@ -35,22 +37,25 @@ function startGame() {
 
 function resetScore() {
 	score = 0;
-	scoreDisplay.innerText = "Score: " + String(score);
+	scoreDisplay.innerText = 'Score: ' + String(score);
 }
 
 function incrementScore(){
 	score += 1;
-	scoreDisplay.innerText = "Score: " + String(score);
+	scoreDisplay.innerText = 'Score: ' + String(score);
 }
 
 function tick() {
 	timeRemaining -= 10;
 	
-	timerText.innerText = `${Math.round(timeRemaining)/1000}/${Math.round(maxTime)/1000}`;
+	let timeRemainingToDisplay = Math.round(timeRemaining/10)/100
+	let maxTimeToDisplay = Math.round(maxTime/10)/100
+	
+	timerText.innerText = `${timeRemainingToDisplay}/${maxTimeToDisplay}`;
 	const percentage = timeRemaining / maxTime;
 	timerBar.style.width = `${percentage * 100}%`;
 	if(timeRemaining <= 0){
-		gameOver("Ran out of time!");
+		gameOver('Ran out of time!');
 	}
 }
 
@@ -61,14 +66,18 @@ function handleGuess(guessMatched) {
 		randomizeAnimal();
 		maxTime *= .99;
 	} else {
-		gameOver("Wrong answer!");
+		gameOver('Wrong answer!');
 	}
 }
 
 function gameOver(reason) {
 	gameRunning = false;
 	clearInterval(gameInterval);
-	textDisplay.innerText = "Game over! " + reason + "\n(Space to replay)";
+	textDisplay.innerText = 'Game over! ' + reason + '\n\u00A0';
+	setTimeout(() => {
+		canStart = true;
+		textDisplay.innerText += '(Shift to replay)';
+	}, 2000);
 }
 
 function randomizeAnimal() {
@@ -93,16 +102,31 @@ function randomizeAnimal() {
 
 window.addEventListener('keydown', (event) => {
 	if (event.repeat) return;
-	if (gameRunning) {
-		if (event.code === 'ShiftLeft') {
-			handleGuess(true);
-		} else if (event.code === 'ShiftRight') {
-			handleGuess(false);
-		}
-	} else {
-		if (event.code === 'Space'){
-			startGame();
-		}
+	if (event.code === 'ShiftLeft'){
+		handleInput('left');
+	} else if (event.code === 'ShiftRight'){
+		handleInput('right');
 	}
 	
-});	
+});
+
+window.addEventListener('touchstart', (e) => {
+	const x = e.touches[0].clientX;
+	if (x < window.innerWidth / 2) {
+		handleInput('left');
+	} else {
+		handleInput('right');
+	}
+});
+
+function handleInput(side) {
+	if (gameRunning) {
+		if (side == 'left'){
+			handleGuess(true);
+		} else if (side == 'right'){
+			handleGuess(false);
+		}
+	} else if (canStart) {
+		startGame();
+	}
+}
