@@ -1,11 +1,11 @@
 const animals = [
-	['🐕','woof'],
-	['🐈','meow'],
-	['🐒','ook ook'],
-	['🐎','neigh'],
-	['🐁','squeak'],
-	['🐖','oink'],
-	['🐑','baa'],
+	['🐕','woof',new Audio('sounds/woof.wav')],
+	['🐈','meow',new Audio('sounds/meow.wav')],
+	['🐒','ook ook',new Audio('sounds/ookook.wav')],
+	['🐎','neigh',new Audio('sounds/neigh.wav')],
+	['🐁','squeak',new Audio('sounds/squeak.wav')],
+	['🐖','oink',new Audio('sounds/oink.wav')],
+	['🐑','baa',new Audio('sounds/baa.wav')],
 ]
 const emojiDisplay = document.getElementById('emoji-display');
 const nameDisplay = document.getElementById('name-display');
@@ -13,8 +13,13 @@ const timerContainer = document.getElementById('timer-container');
 const timerBar = document.getElementById('timer-bar');
 const timerText = document.getElementById('timer-text');
 const scoreDisplay = document.getElementById('score-display');
-const textDisplay = document.getElementById('text-display');
+const feedbackDisplay = document.getElementById('feedback-display');
+const instructionDisplay1 = document.getElementById('instruction-display-1');
+const instructionDisplay2 = document.getElementById('instruction-display-2');
 const initialMaxTime = 3000;
+const decayRate = .98;
+let soundsUnlocked = false;
+let audioMode = false;
 let matched;
 let score;
 let maxTime;
@@ -32,6 +37,10 @@ function startGame() {
 	maxTime = initialMaxTime;
 	timeRemaining = maxTime;
 	gameInterval = setInterval(tick,10);
+	feedbackDisplay.innerHTML = '&nbsp;';
+	instructionDisplay1.innerText = 'F/left tap: Match';
+	instructionDisplay2.innerText = 'J/right tap: Mismatch';
+	nameDisplay.innerHTML = '&nbsp;';
 	randomizeAnimal();
 }
 
@@ -55,7 +64,7 @@ function tick() {
 	const percentage = timeRemaining / maxTime;
 	timerBar.style.width = `${percentage * 100}%`;
 	if(timeRemaining <= 0){
-		gameOver('Ran out of time!');
+		gameOver('Out of time!');
 	}
 }
 
@@ -64,19 +73,26 @@ function handleGuess(guessMatched) {
 		incrementScore();
 		timeRemaining = maxTime;
 		randomizeAnimal();
-		maxTime *= .99;
+		maxTime *= decayRate;
 	} else {
-		gameOver('Wrong answer!');
+		if(matched){
+			gameOver('Those DO match!');
+		} else {
+			gameOver('Those don\'t match!');
+		}
 	}
 }
 
 function gameOver(reason) {
 	gameRunning = false;
 	clearInterval(gameInterval);
-	textDisplay.innerText = 'Game over! ' + reason + '\n\u00A0';
+	feedbackDisplay.innerText = 'Game over! ' + reason + '\n\u00A0';
+	instructionDisplay1.innerHTML = '&nbsp;';
+	instructionDisplay2.innerHTML = '&nbsp;';
 	setTimeout(() => {
 		canStart = true;
-		textDisplay.innerText += '(Shift/tap to replay)';
+		instructionDisplay1.innerText = 'F/left tap: Begin with text';
+		instructionDisplay2.innerText = 'J/right tap: Begin with audio';
 	}, 2000);
 }
 
@@ -97,17 +113,20 @@ function randomizeAnimal() {
 		}
 	}
 	emojiDisplay.innerText = animals[emojiIndex][0];
-	nameDisplay.innerText = animals[soundIndex][1];
+	if (audioMode) {
+		animals[soundIndex][2].play();
+	} else {
+		nameDisplay.innerText = animals[soundIndex][1];
+	}
 }
 
 window.addEventListener('keydown', (event) => {
 	if (event.repeat) return;
-	if (event.code === 'ShiftLeft'){
+	if (event.code === 'KeyF'){
 		handleInput('left');
-	} else if (event.code === 'ShiftRight'){
+	} else if (event.code === 'KeyJ'){
 		handleInput('right');
 	}
-	
 });
 
 window.addEventListener('touchstart', (e) => {
@@ -120,6 +139,10 @@ window.addEventListener('touchstart', (e) => {
 });
 
 function handleInput(side) {
+	if (!soundsUnlocked) {
+		soundsUnlocked = true;
+		animals[0][2].play().then(() => { animals[0][2].pause(); });
+	}
 	if (gameRunning) {
 		if (side == 'left'){
 			handleGuess(true);
@@ -127,6 +150,11 @@ function handleInput(side) {
 			handleGuess(false);
 		}
 	} else if (canStart) {
+		if (side == 'left'){
+			audioMode = false;
+		} else {
+			audioMode = true;
+		}
 		startGame();
 	}
 }
