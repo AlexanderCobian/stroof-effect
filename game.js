@@ -143,13 +143,13 @@ window.addEventListener('touchstart', (e) => {
 	}
 });
 
-function handleInput(side) {
+async function handleInput(side) {
 	if (!soundsUnlocked) {
 		soundsUnlocked = true;
-		animals.forEach(animal => {
+		await Promise.all(animals.map(animal => {
 			animal[2].muted = true;
-			animal[2].play();
-		});
+			return animal[2].play();
+		}));
 	}
 	if (gameRunning) {
 		if (side == 'left'){
