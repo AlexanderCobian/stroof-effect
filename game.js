@@ -8,7 +8,7 @@ const animals = [
 	['🐑','baa','sounds/baa.wav'],
 	['🐦‍⬛','caw','sounds/caw.wav'],
 	['🦆','quack','sounds/quack.wav'],
-	['🐄','cow','sounds/moo.wav'],
+	['🐄','moo','sounds/moo.wav'],
 ]
 const emojiDisplay = document.getElementById('emoji-display');
 const nameDisplay = document.getElementById('name-display');
