@@ -49,8 +49,8 @@ function startGame() {
 	timeRemaining = maxTime;
 	gameInterval = setInterval(tick,10);
 	feedbackDisplay.innerHTML = '&nbsp;';
-	instructionDisplay1.innerText = 'F/left tap: Match';
-	instructionDisplay2.innerText = 'J/right tap: Mismatch';
+	instructionDisplay1.innerText = 'J/right tap: Match';
+	instructionDisplay2.innerText = 'F/left tap: Mismatch';
 	nameDisplay.innerHTML = '&nbsp;';
 	randomizeAnimal();
 }
@@ -165,9 +165,9 @@ function handleInput(side) {
 	}
 	if (gameRunning) {
 		if (side == 'left'){
-			handleGuess(true);
-		} else if (side == 'right'){
 			handleGuess(false);
+		} else if (side == 'right'){
+			handleGuess(true);
 		}
 	} else if (canStart) {
 		if (side == 'left'){
