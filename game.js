@@ -1,14 +1,14 @@
 const animals = [
-	['🐕','woof',new Audio('sounds/woof.wav')],
-	['🐈','meow',new Audio('sounds/meow.wav')],
-	['🐒','ook ook',new Audio('sounds/ookook.wav')],
-	['🐎','neigh',new Audio('sounds/neigh.wav')],
-	['🐁','squeak',new Audio('sounds/squeak.wav')],
-	['🐖','oink',new Audio('sounds/oink.wav')],
-	['🐑','baa',new Audio('sounds/baa.wav')],
-	['🐦‍⬛','caw',new Audio('sounds/caw.wav')],
-	['🦆','quack',new Audio('sounds/quack.wav')],
-	['🐄','cow',new Audio('sounds/moo.wav')],
+	['🐕','woof','sounds/woof.wav'],
+	['🐈','meow','sounds/meow.wav'],
+	['🐒','ook ook','sounds/ookook.wav'],
+	['🐎','neigh','sounds/neigh.wav'],
+	['🐁','squeak','sounds/squeak.wav'],
+	['🐖','oink','sounds/oink.wav'],
+	['🐑','baa','sounds/baa.wav'],
+	['🐦‍⬛','caw','sounds/caw.wav'],
+	['🦆','quack','sounds/quack.wav'],
+	['🐄','cow','sounds/moo.wav'],
 ]
 const emojiDisplay = document.getElementById('emoji-display');
 const nameDisplay = document.getElementById('name-display');
@@ -21,7 +21,8 @@ const instructionDisplay1 = document.getElementById('instruction-display-1');
 const instructionDisplay2 = document.getElementById('instruction-display-2');
 const initialMaxTime = 3000;
 const decayRate = .98;
-let soundsUnlocked = false;
+const audioBuffers = [];
+let audioCtx = null;
 let audioMode = false;
 let matched;
 let score;
@@ -32,6 +33,13 @@ let gameRunning = false;
 let canStart = true;
 let emojiIndex = 0;
 let soundIndex = 1;
+
+function playSound(index) {
+	const src = audioCtx.createBufferSource();
+	src.buffer = audioBuffers[index];
+	src.connect(audioCtx.destination);
+	src.start(0);
+}
 
 function startGame() {
 	canStart = false;
@@ -117,9 +125,7 @@ function randomizeAnimal() {
 	}
 	emojiDisplay.innerText = animals[emojiIndex][0];
 	if (audioMode) {
-		animals[soundIndex][2].muted = false;
-		animals[soundIndex][2].currentTime = 0;
-		animals[soundIndex][2].play();
+		playSound(soundIndex);
 	} else {
 		nameDisplay.innerText = animals[soundIndex][1];
 	}
@@ -143,13 +149,19 @@ window.addEventListener('touchstart', (e) => {
 	}
 });
 
-async function handleInput(side) {
-	if (!soundsUnlocked) {
-		soundsUnlocked = true;
-		await Promise.all(animals.map(animal => {
-			animal[2].muted = true;
-			return animal[2].play();
-		}));
+function handleInput(side) {
+	if (!audioCtx) {
+		audioCtx = new AudioContext();
+		audioCtx.resume();
+		Promise.all(animals.map((animal, i) =>
+			fetch(animal[2])
+				.then(r => r.arrayBuffer())
+				.then(buf => audioCtx.decodeAudioData(buf))
+				.then(decoded => { audioBuffers[i] = decoded; })
+		));
+		instructionDisplay1.innerText = 'F/left tap: Begin with text';
+		instructionDisplay2.innerText = 'J/right tap: Begin with audio';
+		return;
 	}
 	if (gameRunning) {
 		if (side == 'left'){
