@@ -102,8 +102,8 @@ function gameOver(reason) {
 	instructionDisplay2.innerHTML = '&nbsp;';
 	setTimeout(() => {
 		canStart = true;
-		instructionDisplay1.innerText = 'F/left tap: Begin with text';
-		instructionDisplay2.innerText = 'J/right tap: Begin with audio';
+		instructionDisplay1.innerText = 'J/right tap: Begin with audio';
+		instructionDisplay2.innerText = 'F/left tap: Begin with text';
 	}, 2000);
 }
 
@@ -159,8 +159,8 @@ function handleInput(side) {
 				.then(buf => audioCtx.decodeAudioData(buf))
 				.then(decoded => { audioBuffers[i] = decoded; })
 		));
-		instructionDisplay1.innerText = 'F/left tap: Begin with text';
-		instructionDisplay2.innerText = 'J/right tap: Begin with audio';
+		instructionDisplay1.innerText = 'J/right tap: Begin with audio';
+		instructionDisplay2.innerText = 'F/left tap: Begin with text';
 		return;
 	}
 	if (gameRunning) {
