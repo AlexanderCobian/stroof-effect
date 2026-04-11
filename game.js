@@ -6,6 +6,9 @@ const animals = [
 	['🐁','squeak',new Audio('sounds/squeak.wav')],
 	['🐖','oink',new Audio('sounds/oink.wav')],
 	['🐑','baa',new Audio('sounds/baa.wav')],
+	['🐦‍⬛','caw',new Audio('sounds/caw.wav')],
+	['🦆','quack',new Audio('sounds/quack.wav')],
+	['🐄','cow',new Audio('sounds/moo.wav')],
 ]
 const emojiDisplay = document.getElementById('emoji-display');
 const nameDisplay = document.getElementById('name-display');
@@ -114,6 +117,8 @@ function randomizeAnimal() {
 	}
 	emojiDisplay.innerText = animals[emojiIndex][0];
 	if (audioMode) {
+		animals[soundIndex][2].muted = false;
+		animals[soundIndex][2].currentTime = 0;
 		animals[soundIndex][2].play();
 	} else {
 		nameDisplay.innerText = animals[soundIndex][1];
@@ -141,7 +146,10 @@ window.addEventListener('touchstart', (e) => {
 function handleInput(side) {
 	if (!soundsUnlocked) {
 		soundsUnlocked = true;
-		animals[0][2].play().then(() => { animals[0][2].pause(); });
+		animals.forEach(animal => {
+			animal[2].muted = true;
+			animal[2].play();
+		});
 	}
 	if (gameRunning) {
 		if (side == 'left'){
