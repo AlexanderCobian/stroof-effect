@@ -22,7 +22,6 @@ const instructionDisplay2 = document.getElementById('instruction-display-2');
 const initialMaxTime = 3000;
 const decayRate = .98;
 const audioBuffers = [];
-let audioCtx = null;
 let audioMode = false;
 let matched;
 let score;
@@ -30,9 +29,17 @@ let maxTime;
 let timeRemaining;
 let gameInterval;
 let gameRunning = false;
-let canStart = true;
+let canStart = false;
 let emojiIndex = 0;
 let soundIndex = 1;
+
+let audioCtx = new AudioContext();
+Promise.all(animals.map((animal, i) =>
+	fetch(animal[2])
+		.then(r => r.arrayBuffer())
+		.then(buf => audioCtx.decodeAudioData(buf))
+		.then(decoded => { audioBuffers[i] = decoded; })
+)).then(() => {canStart = true; console.log('All sounds loaded');});
 
 function playSound(index) {
 	const src = audioCtx.createBufferSource();
@@ -150,19 +157,7 @@ window.addEventListener('touchstart', (e) => {
 });
 
 function handleInput(side) {
-	if (!audioCtx) {
-		audioCtx = new AudioContext();
-		audioCtx.resume();
-		Promise.all(animals.map((animal, i) =>
-			fetch(animal[2])
-				.then(r => r.arrayBuffer())
-				.then(buf => audioCtx.decodeAudioData(buf))
-				.then(decoded => { audioBuffers[i] = decoded; })
-		));
-		instructionDisplay1.innerText = 'J/right tap: Begin with audio';
-		instructionDisplay2.innerText = 'F/left tap: Begin with text';
-		return;
-	}
+	audioCtx.resume();
 	if (gameRunning) {
 		if (side == 'left'){
 			handleGuess(false);
