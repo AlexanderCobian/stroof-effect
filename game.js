@@ -10,6 +10,15 @@ const animals = [
 	['🦆','quack','sounds/quack.wav'],
 	['🐄','moo','sounds/moo.wav'],
 ]
+const tutorialData = [
+	['🐕','meow',-1,'Welcome to Stroof Effect!','F/J/Tap to continue',''],
+	['🐕','woof',-1,'When you see a match,','press J or tap on the right','right'],
+	['🐈','quack',-1,'When you see a mismatch,','press F or tap on the left','left'],
+	['🐒','ook ook',-1,'There\'s also audio mode!','F/J/Tap to continue',''],
+	['🐁','&nbsp;',4,'When you hear a match,','press J or tap on the right','right'],
+	['🦆','&nbsp;',7,'When you hear a mismatch,','press F or tap on the left','left'],
+	['😊','&nbsp;',-1,'Enjoy!','F/J/Tap to continue',''],
+]
 const emojiDisplay = document.getElementById('emoji-display');
 const nameDisplay = document.getElementById('name-display');
 const timerContainer = document.getElementById('timer-container');
@@ -22,7 +31,6 @@ const instructionDisplay2 = document.getElementById('instruction-display-2');
 const initialMaxTime = 3000;
 const decayRate = .98;
 const audioBuffers = [];
-let audioCtx = null;
 let audioMode = false;
 let matched;
 let score;
@@ -30,9 +38,18 @@ let maxTime;
 let timeRemaining;
 let gameInterval;
 let gameRunning = false;
-let canStart = true;
+let canStart = false;
 let emojiIndex = 0;
 let soundIndex = 1;
+let tutorialPosition = 0;
+
+let audioCtx = new AudioContext();
+Promise.all(animals.map((animal, i) =>
+	fetch(animal[2])
+		.then(r => r.arrayBuffer())
+		.then(buf => audioCtx.decodeAudioData(buf))
+		.then(decoded => { audioBuffers[i] = decoded; })
+)).then(() => { canStart = true; });
 
 function playSound(index) {
 	const src = audioCtx.createBufferSource();
@@ -150,20 +167,9 @@ window.addEventListener('touchstart', (e) => {
 });
 
 function handleInput(side) {
-	if (!audioCtx) {
-		audioCtx = new AudioContext();
-		audioCtx.resume();
-		Promise.all(animals.map((animal, i) =>
-			fetch(animal[2])
-				.then(r => r.arrayBuffer())
-				.then(buf => audioCtx.decodeAudioData(buf))
-				.then(decoded => { audioBuffers[i] = decoded; })
-		));
-		instructionDisplay1.innerText = 'J/right tap: Begin with audio';
-		instructionDisplay2.innerText = 'F/left tap: Begin with text';
-		return;
-	}
-	if (gameRunning) {
+	if (tutorialPosition >= 0) {
+		handleTutorialInput(side);
+	} else if (gameRunning) {
 		if (side == 'left'){
 			handleGuess(false);
 		} else if (side == 'right'){
@@ -177,4 +183,30 @@ function handleInput(side) {
 		}
 		startGame();
 	}
+}
+
+function handleTutorialInput(side) {
+	// do not continue tutorial unless we see the expected input
+	if (tutorialData[tutorialPosition][5] != '' && tutorialData[tutorialPosition][5] != side){
+		return;
+	}
+	
+	tutorialPosition++;
+	
+	// if we're done with the tutorial, prep game for normal operation
+	if (tutorialPosition == tutorialData.length){
+		tutorialPosition = -1;
+		instructionDisplay1.innerText = 'J/right tap: Begin with audio';
+		instructionDisplay2.innerText = 'F/left tap: Begin with text';
+		return;
+	}
+	
+	// ...otherwise display the next part of the tutorial
+	emojiDisplay.innerText = tutorialData[tutorialPosition][0];
+	nameDisplay.innerHTML = tutorialData[tutorialPosition][1];
+	if (tutorialData[tutorialPosition][2] >= 0) {
+		playSound(tutorialData[tutorialPosition][2]);
+	}
+	instructionDisplay1.innerText = tutorialData[tutorialPosition][3];
+	instructionDisplay2.innerText = tutorialData[tutorialPosition][4];
 }
