@@ -13,6 +13,7 @@ body {
 	font-family: sans-serif;
 	overflow: hidden; /* No scrolling */
 	touch-action: none; /* No "pulling" the page */
+	user-select: none;
 }
 #game-container {
 	width: 90vw;
